@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block main %}
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Movie Recommendation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Input:</h5>
+                <div>Movie: <span id="m"></span></div>
+                <div>Release Year: <span id="ry"></span></div>
+
+                <h5 class="pt-3">Movie Recommendation</h5>
+                <div id="recommendation"></div>
+                <br>
+                <div id="ov"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          
+        </div>
+    </div>
+</div>
+
+<div class="container pt-5">
+    <div class="row justify-content-md-center">
+        <div class="col-md-4">
+            <h1>Movie Recommendation</h1>
+            <form action="" id="post-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="movie_input">Enter Your Favorite Movie</label>
+                    <input type="text" class="form-control" id="movie_input" placeholder="" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="release_year">Release Year</label>
+                    <input type="number" step="1" class="form-control" id="release_year" placeholder="" required>
+                </div>
+               
+                <button type="submit" value="Submit" data-toggle="modal" data-target="#exampleModal" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).on('submit', '#post-form',function(e){
+        e.preventDefault();
+        $.ajax({
+            type:'POST',
+            url:'{% url "rec:submit_rec" %}',
+            data:{
+                movie_input:$('#movie_input').val(),
+                release_year:$('#release_year').val(),
+              
+                csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+                action: 'post'
+            },
+            success:function(json) {
+                document.forms["post-form"].reset();
+                document.getElementById("recommendation").innerHTML = json['result']
+                document.getElementById("m").innerHTML = json['movie_input']
+                document.getElementById("ry").innerHTML = json['release_year']
+                document.getElementById("ov").innerHTML = json['overview']
+            },
+            error : function(xhr,errmsg,err) {
+
+            }
+        });
+    })
+</script>
+
+{% endblock %}
